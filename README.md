@@ -46,6 +46,8 @@ To make changes to this code clone the `dev` branch using:
 
 `git clone -b dev --single-branch https://github.com/4005cmd19/service-provider.git`
 
+Make sure to remove any sensitive information from `event.json` before committing changes. 
+
 When changes are finalised and working, create a pull request into `main`.
 
 Make sure that the event object contains all the parameters that the function needs.
