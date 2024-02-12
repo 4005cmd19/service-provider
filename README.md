@@ -46,6 +46,8 @@ To make changes to this code clone the `dev` branch using:
 
 `git clone -b dev --single-branch https://github.com/4005cmd19/service-provider.git`
 
+Make sure to remove any sensitive information from `event.json` before committing changes. 
+
 When changes are finalised and working, create a pull request into `main`.
 
 Make sure that the event object contains all the parameters that the function needs.
@@ -54,3 +56,104 @@ After the pull request is approved I will update AWS Lambda and EventBridge with
 
 ## Test changes
 Test new `handler` function behaviour in `index_test.mjs`
+
+## TFWM API
+From testing, I figured out that only 8 `StopTypes` are tagged with `bus_or_coach` as the transport mode:
+
+`NaptanFlexibleZone`
+`NaptanHailAndRideSection`
+`NaptanCoachAccessArea`
+`NaptanMarkedPoint`
+`NaptanCoachEntrance`
+`NaptanCoachVariableBay`
+`NaptanCoachBay`
+`NaptanUnmarkedPoint`
+
+This means that we might not have to call the API with all 34 stop types.
+
+We can create a 'validity check' function to reliably get nearby bus stops:
+
+```
+Pseudocode
+
+fun getValidStops(){
+    validStops := []
+
+    stopTypes := <array_of_stop_types_as_strings>
+
+    for (stopType in stopTypes) {
+        response := fetch(stopType)
+        stops := response.stop_array
+        
+        for (stop in stops):
+            // if were only using the 8 stop types
+            // no need to check for transport mode
+            if (stop.transport_mode == "bus_or_coach" && stop.lines_array.length > 0):
+                validStops.add(stop)
+            }
+        }
+    }
+    
+    return validStops
+}
+```
+
+Each of the stops returned by the API has a `Lines` attribute that contains all the lines serviced by this stop, and a `Modes` tag that specifies the transport mode that this stop services, e.g. `bus_or_coach`, `rail`, etc.
+
+The validity function checks if the transport mode is `bus_or_coach` and that the `Lines` attribute isn't empty, i.e. the bus stop services at least one bus or coach line.
+
+From this point on, the `/Lines/*` endpoints can be used to get arrival, route and route path information.
+
+## MQTT protocol topics 
+_!! unfinished_
+### `buses/routes`
+
+_!! maybe use `buses/routes/{city}`_
+
+Topic used to get nearby bus routes, including path points to plot on map.
+
+Payload JSON format:
+
+```
+{
+    requestedLocation: LatLngRect, // last requested location
+    returnedLocation: LatLngRect, // location for which results are 
+    stops: BusStop[],
+}
+
+// types
+LatLngRect: {
+    southwest: {
+        lat: number,
+        lng: number
+    },
+    northeast: {
+        lat: number,
+        lng: number
+    }
+}
+
+BusStop: {
+    id: string,
+    display_name: string,
+    lines: BusLine[]
+}
+
+BusLine: {
+    id: string,
+    display_name: string,
+    stops: {
+        inbound: BusStop[],
+        outbound: BusStop[]
+    }
+}
+```
+
+-`requestedLocation` - Last requested location for nearby buses
+
+-`returnedLocation` - Last location for which nearby buses were returned
+
+### Limits
+Keep in mind the following limits:
+
+- Max message size: 268,435,456 bytes
