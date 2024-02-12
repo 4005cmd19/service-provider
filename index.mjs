@@ -1,11 +1,10 @@
 import mqtt from "mqtt";
-import * as timers from "timers";
 
 // !! Uses the mqtt.js library to connect to hivemq broker
 
 /**
  * Build an object that contains all the connection params required by this app.
- * Passed into MQTT
+ * Passed into mqtt.connectAsync()
  */
 function buildConnectionProfile(event) {
     return {
