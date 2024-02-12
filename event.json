@@ -5,6 +5,6 @@
   "mqtt_host": "61af2c55ce064492b81b2877be486551.s2.eu.hivemq.cloud",
   "mqtt_port": 8883,
   "mqtt_app_id": "<mqtt_username>",
-  "mqtt_app_key": "mqtt_password",
+  "mqtt_app_key": "<mqtt_password>",
   "mqtt_protocol": "ssl"
 }
