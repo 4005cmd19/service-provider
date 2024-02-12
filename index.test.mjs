@@ -4,6 +4,7 @@
 
 import {handler} from "./index.mjs";
 
+// typical test event
 const testEvent = {
     ttl: 10000,
     debug: true,
