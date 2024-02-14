@@ -46,13 +46,13 @@ To make changes to this code clone the `dev` branch using:
 
 `git clone -b dev --single-branch https://github.com/4005cmd19/service-provider.git`
 
-Make sure to remove any sensitive information from `event.json` before committing changes. 
+The cloned `event.json` file from GitHub will not have the HiveMQ username and password (for security reasons). These can be found on our Discord server.
 
-When changes are finalised and working, create a pull request into `main`.
+When changes are finalised and working, commit and push to `dev` and create a pull request into `main`.
 
-Make sure that the event object contains all the parameters that the function needs.
+Make sure to remove any sensitive information from `event.json` before committing changes.
 
-After the pull request is approved I will update AWS Lambda and EventBridge with the new code.
+After the pull request is submitted update AWS Lambda with the new code. Only the code needs to be updated, `event.json` doesn't.
 
 ## Test changes
 Test new `handler` function behaviour in `index_test.mjs`
@@ -112,6 +112,12 @@ _!! maybe use `buses/routes/{city}`_
 
 Topic used to get nearby bus routes, including path points to plot on map.
 
+Endpoints used:
+- `/StopPoint` - Get nearby stops and lines
+- `/Line/{line_id}/StopPoints` - Get all stops for all the lines
+- `/Line/{line_id}/Route` - Get routes (line destinations)
+- `/Line/{line_id}/Route/Sequence/{direction}` - Get path points to plot bus route on map
+
 Payload JSON format:
 
 ```
@@ -122,20 +128,21 @@ Payload JSON format:
 }
 
 // types
+
+LatLngPoint: {
+    lat: number,
+    lng: number
+}
+
 LatLngRect: {
-    southwest: {
-        lat: number,
-        lng: number
-    },
-    northeast: {
-        lat: number,
-        lng: number
-    }
+    southwest: LatLngPoint,
+    northeast: LatLngPoint
 }
 
 BusStop: {
     id: string,
     display_name: string,
+    location: LatLngPoint,
     lines: BusLine[]
 }
 
@@ -153,7 +160,19 @@ BusLine: {
 
 -`returnedLocation` - Last location for which nearby buses were returned
 
+### `buses/arrivals/{line_id}/{stop_point_id}`
+
+Endpoints used `/Line/{line_id}/Arrivals/{stop_point_id}`
+
+Message JSON format:
+```
+{
+    line_id: string,
+    stop_id: string,
+}
+```
+
 ### Limits
-Keep in mind the following limits:
+Keep in mind the following limits for the HiveMQ cloud broker:
 
 - Max message size: 268,435,456 bytes
