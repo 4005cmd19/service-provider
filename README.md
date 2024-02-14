@@ -46,13 +46,13 @@ To make changes to this code clone the `dev` branch using:
 
 `git clone -b dev --single-branch https://github.com/4005cmd19/service-provider.git`
 
-Make sure to remove any sensitive information from `event.json` before committing changes. 
+The cloned `event.json` file from GitHub will not have the HiveMQ username and password (for security reasons). These can be found on our Discord server.
 
-When changes are finalised and working, create a pull request into `main`.
+When changes are finalised and working, commit and push to `dev` and create a pull request into `main`.
 
-Make sure that the event object contains all the parameters that the function needs.
+Make sure to remove any sensitive information from `event.json` before committing changes.
 
-After the pull request is submitted I will update AWS Lambda and EventBridge with the new code.
+After the pull request is submitted update AWS Lambda with the new code. Only the code needs to be updated, `event.json` doesn't.
 
 ## Test changes
 Test new `handler` function behaviour in `index_test.mjs`
