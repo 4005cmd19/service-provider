@@ -17,14 +17,16 @@ Currently, the object contains the following parameters:
 
 ```
 {
-"ttl": 10000,
-"debug": true,
-"mqtt_connect_timeout": 10000,
-"mqtt_host": "61af2c55ce064492b81b2877be486551.s2.eu.hivemq.cloud",
-"mqtt_port": 8883,
-"mqtt_app_id": <hive-mq-username>,
-"mqtt_app_key": <hive-mq-password>,
-"mqtt_protocol": "ssl"
+    "ttl": 10000,
+    "debug": true,
+    "mqtt_connect_timeout": 10000,
+    "mqtt_host": "61af2c55ce064492b81b2877be486551.s2.eu.hivemq.cloud",
+    "mqtt_port": 8883,
+    "mqtt_app_id": <hive-mq-username>,
+    "mqtt_app_key": <hive-mq-password>,
+    "mqtt_protocol": "ssl",
+    "tfwm_app_id": <tfwm_api_app_id>,
+    "tfwm_app_key": <tfwm_api_app_key>
 }
 ```
 
@@ -43,6 +45,10 @@ Currently, the object contains the following parameters:
 `mqtt_app_key` - HiveMQ password for this app, used to establish connection with broker
 
 `mqtt_protocol` - Protocol to use when establishing connection with broker
+
+`tfwm_app_id` - App ID for the TFWM API
+
+`tfwm_app_key` - App key for the TFWM API
 
 ## Make changes
 
@@ -173,6 +179,7 @@ Call this endpoint twice, with direction set to `inbound` and `outbound` to get 
 the line's routes
 
 ### Using the API
+
 The following pseudocode could be used to get the bus line and stop data:
 
 ```
@@ -185,11 +192,11 @@ busRoutes := []
 linesResponse := fetch ("/Line/Mode/bus%2Ccoach%2Cbus_or_coach/Route") // json object
 
 lines := linesResponse.ArrayOfLines.Line // json array
-lines.forEach (line) {
+lines.forEach { line ->
     operatorsArray := []
 
     operators := line.Operators.Operator // json array
-    operators.forEach (operator) {
+    operators.forEach { operator ->
         operatorsArray.add ({
             id := operator.Id,
             name := operator.Name,
@@ -201,7 +208,7 @@ lines.forEach (line) {
     routeIds := []
     routeObjects := []
     
-    routes.forEach (route) {
+    routes.forEach { route ->
         routeIds.add(route.RouteCode)
     
         routeObjects.add({
@@ -236,7 +243,7 @@ for (line in busLines) {
     stopIds := []
     
     stops := stopsResponse.ArrayOfStopPoint.StopPoint // json array
-    stops.forEach (stop) {
+    stops.forEach { stop ->
         stopIds.add(stop.Id)
     
         b := busStops.find { busStop -> busStop.id == stop.Id }
@@ -268,7 +275,7 @@ for (line in busLines) {
     inboundPath := inboundResponse.RouteSequence.OrderedLineRoutes.OrderedRoute
     outboundPath := outboundResponse.RouteSequence.OrderedLineRoutes.OrderedRoute
     
-    inboundPath.forEach (r) {
+    inboundPath.forEach { r ->
         _id := r.RouteId
         _name := r.Name
         codes := r.NaptanIds.string
@@ -282,7 +289,7 @@ for (line in busLines) {
         }
     }
     
-    outboundPath.forEach (r) {
+    outboundPath.forEach { r ->
         _id := r.RouteId
         _name := r.Name
         codes := r.NaptanIds.string
@@ -299,35 +306,43 @@ for (line in busLines) {
 
 for (line in busLines) {
     MqttClient.publish ("buses/lines/{line.id}", Json.stringify(line))
-    
-    for (route in busRoutes) {
-        MqttClient.publish ("buses/lines/{route.lineId}/routes", Json.stringify(route))
-    }
 }
 
 for (stop in busStops) {
     MqttClient.publish ("buses/stops/{stop.id}", Json.stringify(stop))
 }
 
+for (route in busRoutes) {
+    MqttClient.publish ("buses/lines/{route.lineId}/routes", Json.stringify(route))
+}
+
 ```
 
 #### Cost of this algorithm
-The TFWM API has a daily 10000 hit limit. The call to `/Line/Mode/bus%2Ccoach%2Cbus_or_coach/Route` returns around 420 bus lines.
-This results in around 420 calls to the `/Line/${line_id}/StopPoints` endpoint. Then there are two sets of around 420 calls to the `/Line/${line_id}/Route/Sequence/{direction}` endpoint
 
-This totals around 1261 API calls, meaning if this process is done every time the Lambda function is triggered. This means that the API hit limit would be reached
+The TFWM API has a daily 10000 hit limit. The call to `/Line/Mode/bus%2Ccoach%2Cbus_or_coach/Route` returns around 420
+bus lines.
+This results in around 420 calls to the `/Line/${line_id}/StopPoints` endpoint. Then there are two sets of around 420
+calls to the `/Line/${line_id}/Route/Sequence/{direction}` endpoint
+
+This totals around 1261 API calls, meaning if this process is done every time the Lambda function is triggered the API hit limit would be reached
 after about 8 times the function is triggered.
 
-However, bus line and stop information is unlikely to change during the course of a day so this process could only be run once per day.
+However, bus line and stop information is unlikely to change during the course of a day so this process could only be
+run once per day.
 This would be often enough to account for things like stop closures or bus line changes.
 
 ## GTFS Realtime
+
 Since there are about 420 lines, using the TFWM API for bus arrival times often would be impossible.
 This would require 420 calls to the `/Line/{line_id}/Arrivals` endpoint every 30s for the data to be up-to-date.
 
-For this, we can use the [General Transit Feed Specification Realtime API](https://gtfs.org/realtime/language-bindings/nodejs/).
+For this, we can use
+the [General Transit Feed Specification Realtime API](https://gtfs.org/realtime/language-bindings/nodejs/). The
+information can be obtained from the following endpoint:
+`http://api.tfwm.org.uk/gtfs/trip_updates?app_id=[APP_ID]&app_key=[APP_KEY]`
 
-### Limits
+## Limits
 
 Keep in mind the following limits for the HiveMQ cloud broker:
 

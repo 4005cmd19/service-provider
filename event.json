@@ -4,7 +4,11 @@
   "mqtt_connect_timeout": 10000,
   "mqtt_host": "61af2c55ce064492b81b2877be486551.s2.eu.hivemq.cloud",
   "mqtt_port": 8883,
+  "mqtt_protocol": "ssl",
+
   "mqtt_app_id": "<mqtt_username>",
   "mqtt_app_key": "<mqtt_password>",
-  "mqtt_protocol": "ssl"
+
+  "tfwm_app_id": "<tfwm_api_app_id>",
+  "tfwm_app_key": "<tfwm_api_app_key>"
 }
