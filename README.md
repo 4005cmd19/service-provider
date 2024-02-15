@@ -233,26 +233,34 @@ lines.forEach (line) {
 for (line in busLines) {
     stopsResponse := fetch("/Line/${line.id}/StopPoints")
     
-    val stops := stopsResponse.ArrayOfStopPoint.StopPoint // json array
+    stopIds := []
+    
+    stops := stopsResponse.ArrayOfStopPoint.StopPoint // json array
     stops.forEach (stop) {
-        busStops.add({
-            id := stop.Id,
-            code := stop.HubNaptanCode,
-            name := stop.CommonName,
-            
-            location := {
-                lat := stop.Lat,
-                lng := stop.Lon
-            },
-            
-            lines := [] // fill later
-        })
+        stopIds.add(stop.Id)
+    
+        b := busStops.find { busStop -> busStop.id == stop.Id }
+    
+        if (b != null) {
+            b.lines.add(line.id)
+        }
+        else {
+            busStops.add({
+                id := stop.Id,
+                code := stop.HubNaptanCode,
+                name := stop.CommonName,
+                
+                location := {
+                    lat := stop.Lat,
+                    lng := stop.Lon
+                },
+                
+                lines := [line]
+            })
+        }
     }
     
-    for (busStop in busStops) {
-        busStop.lines.add(line.id)
-        line.stops.add (busStop.id)
-    }
+    line.stops = stopIds
     
     inboundResponse := fetch("/Line/${line.id}/Route/Sequence/inbound")
     outboundResponse := fetch("/Line/${line.id}/Route/Sequence/outbound")
@@ -289,15 +297,15 @@ for (line in busLines) {
     }
 }
 
-for (line of busLines) {
+for (line in busLines) {
     MqttClient.publish ("buses/lines/{line.id}", Json.stringify(line))
     
-    for (route of busRoutes) {
+    for (route in busRoutes) {
         MqttClient.publish ("buses/lines/{route.lineId}/routes", Json.stringify(route))
     }
 }
 
-for (stop of busStops) {
+for (stop in busStops) {
     MqttClient.publish ("buses/stops/{stop.id}", Json.stringify(stop))
 }
 
