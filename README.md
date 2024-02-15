@@ -172,13 +172,15 @@ Use this endpoint to get all the bus stops on a given bus line.
 Call this endpoint twice, with direction set to `inbound` and `outbound` to get an ordered list of bus stop for each of
 the line's routes
 
+### Using the API
+The following pseudocode could be used to get the bus line and stop data:
+
 ```
 Pseudocode
 
 busLines := []
 busStops := []
 busRoutes := []
-busArrivals := []
 
 linesResponse := fetch ("/Line/Mode/bus%2Ccoach%2Cbus_or_coach/Route") // json object
 
