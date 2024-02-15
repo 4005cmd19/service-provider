@@ -93,6 +93,7 @@ This topic should return all the routes for the given line in the following form
 
 ```
 {
+    lineId: string,
     routes: BusLineRoute[]
 }
 
@@ -100,8 +101,6 @@ This topic should return all the routes for the given line in the following form
 BusLineRoute: {
     id: string,
     name: string,
-    
-    lineId: string,
     
     startId: string,
     startName: string,
