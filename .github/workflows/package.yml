@@ -1,0 +1,12 @@
+name: Package AWS Lambda function
+run-name: Package and publish to AWS Lambda
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "packaging files"
