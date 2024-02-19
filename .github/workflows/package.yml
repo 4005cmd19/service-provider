@@ -1,9 +1,6 @@
 name: Package AWS Lambda function
 run-name: Package and publish to AWS Lambda
-on:
-  push:
-    branches:
-    - main
+on: workflow_dispatch
 
 jobs:
   package:
