@@ -17,11 +17,12 @@ function buildConnectionProfile(event) {
     }
 }
 
+const TFWM_URL = "http://api.tfwm.org.uk"
 
 /**
  * Handler function required by AWS Lambda
  * When the Lambda function is triggered, this is the function that runs
- * 
+ *
  * @param event JSON object passed by the EvenBridge scheduler when triggering the function, contains connection configuration params
  */
 export const handler = async (event) => {
@@ -52,22 +53,28 @@ export const handler = async (event) => {
 
     // try connect
     let client = await mqtt.connectAsync(connectionProfile)
-    
+
     // connected before timer ran out - remove timer
     clearTimeout(connectionTimeout)
 
     console.log(`client - isConnected=${client.connected}`)
 
-    // at this its connected
-    // subscribe to topics
-    await client.subscribeAsync("test/hello/#")
+    // get data
 
-    // subscribe callback
-    client.on("message", (topic, message, packet) => {
-        console.info(`message - topic=${topic} message=${message.length === 0 ? "CLEAR" : message}`)
-        
-        
-    })
+    let busLines = []
+    let busStops = []
+    let busRoutes = []
+
+    let linesResponse = await fetch(
+        `${TFWM_URL}/Line/Mode/bus%2Ccoach%2Cbus_or_coach/Route?app_id=${event.tfwm_app_id}&app_key=${event.tfwm_app_key}`,
+        {
+            headers: {
+                "accept": "application/json"
+            }
+        }
+    )
+
+    //////
 
     // ensure Lambda function runs long enough to listen to changes in subscribed topics
     await new Promise((resolve, reject) => runFor(event.ttl, resolve))
