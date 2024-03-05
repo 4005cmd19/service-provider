@@ -58,7 +58,7 @@ export const handler = async (event) => {
 
     console.log(`client - isConnected=${client.connected}`)
 
-
+    // at this its connected
     // subscribe to topics
     await client.subscribeAsync("test/hello/#")
 
