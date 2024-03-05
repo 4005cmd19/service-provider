@@ -6,7 +6,7 @@ import mqtt from "mqtt";
  * Build an object that contains all the connection params required by this app.
  * Passed into mqtt.connectAsync()
  */
-function buildConnectionProfile(event) {
+export function buildConnectionProfile(event) {
     return {
         host: event.mqtt_host,
         port: event.mqtt_port,
