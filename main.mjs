@@ -15,7 +15,7 @@ async function fetchEventData(eventConfig){
     return JSON.parse(eventData);
 }
 
-//initialise application
+//initialise command line
 async function init(){
     try{
         const eventConfig = await fetchEventData();
