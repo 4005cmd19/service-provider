@@ -1,5 +1,5 @@
 import {buildConnectionProfile} from './index.mjs';
-import {fetchTfwmData} from './tfwmFetch.mjs';
+import {fetchGTFSData, fetchTfwmData} from './tfwmFetch.mjs';
 import readline from 'readline';
 import fs from 'fs/promises';
 
@@ -32,7 +32,7 @@ async function init(){
         switch (input.trim()){
             case 'fetch tfwm':
                 console.log('Fetching tfwm api...')
-                const data = await fetchTfwmData();
+                const data = await fetchGTFSData();
         
             default: 
                 console.log('unknown command, please try again. ');
