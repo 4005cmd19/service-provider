@@ -4,18 +4,23 @@ import fetch from 'node-fetch';
 
 // tfwm url fetch
 export class TfwmUrlProvider {
-    URL = "http://api.tfwm.org.uk"
+    static URL = "http://api.tfwm.org.uk";
 
-    appId
-    appKey
+    appId = "bdb89e2f";
+    appKey = "ab6050821a1b294ce61fd8a010815456";
 
-    authParams
+    authParams = ""; // the error could be from this
 
+    //error: isn't being passed to the function in main
     constructor(appId, appKey) {
-        this.appId = appId
-        this.appKey = appKey
+        this.appId = appId;
+        this.appKey = appKey;
 
-        this.authParams = `?app_id=${this.appId}&app_key=${this.appKey}`
+        console.log(`appId=${this.appId} appKey=${this.appKey}`)
+
+        this.authParams = `?app_id=${this.appId}&app_key=${this.appKey}`;
+
+        console.log(`authParas=${this.authParams}`)
     }
 
     /**
@@ -23,7 +28,7 @@ export class TfwmUrlProvider {
      * @returns {string}
      */
     linesWithRoutes() {
-        return `${URL}/Line/Mode/bus%2Ccoach%2Cbus_or_coach/Route${this.authParams}`
+        return `${this.URL}/Line/Mode/bus%2Ccoach%2Cbus_or_coach/Route${this.authParams}`
     }
 
     /**
@@ -32,7 +37,7 @@ export class TfwmUrlProvider {
      * @returns {string}
      */
     lineBusStops(lineId) {
-        return `${URL}/Line/${lineId}/StopPoints${this.authParams}`
+        return `${this.URL}/Line/${lineId}/StopPoints${this.authParams}`
     }
 
     // direction -> "outbound" or "inbound"
@@ -43,22 +48,11 @@ export class TfwmUrlProvider {
      * @returns {string}
      */
     lineRouteStopSequence(lineId, direction) {
-        return `${URL}/Line/${lineId}/Route/Sequence/${direction}${this.authParams}`
+        return `${this.URL}/Line/${lineId}/Route/Sequence/${direction}${this.authParams}`
     }
 }
 
-
-// TODO: Need to hide the URL and bearer token once code is working
-export async function fetchTfwmData(url){
-    const response = await fetch(url, {
-    headers: { 
-         'Authorization' : 'Bearer ab6050821a1b294ce61fd8a010815456'
-        }
-    });
-    return response.json();
-}
-
-    // error: throwing invalid url 
+    // function to fetch GTFS tfwm data
     export async function fetchGTFSData(){
         const gtfsRealtimeUrl = 'http://api.tfwm.org.uk/gtfs/trip_updates?app_id=bdb89e2f&app_key=ab6050821a1b294ce61fd8a010815456';
         try{
@@ -78,9 +72,3 @@ export async function fetchTfwmData(url){
             console.error('Error fetching GTFS data ', error);
         }
 }
-
-
-
-    //processedLines.forEach(line => {
-   //     client.publish('buses/lines/6ded59e9', JSON.stringify(line));
-    //});

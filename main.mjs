@@ -1,5 +1,5 @@
 import {buildConnectionProfile} from './index.mjs';
-import {fetchGTFSData, fetchTfwmData} from './tfwmFetch.mjs';
+import {fetchGTFSData, TfwmUrlProvider } from './tfwmFetch.mjs';
 import readline from 'readline';
 import fs from 'fs/promises';
 
@@ -27,13 +27,21 @@ async function init(){
         console.error('failed to connect to mqtt broker ', error);
     }
 
-    // command line for testing. Expand this with the google api 
+    // command line for testing 
     rl.on('line', async (input) => {
         switch (input.trim()){
-            case 'fetch tfwm':
-                console.log('Fetching tfwm api...')
+            case 'fetch gtfs':
+                console.log('Fetching tfwm GTFS api...');
                 const data = await fetchGTFSData();
-        
+            break
+            case 'fetch stops':
+                //fetch parameters from tfwmFetch
+                const urlProvider = new TfwmUrlProvider("bdb89e2f", "ab6050821a1b294ce61fd8a010815456");
+                console.log('Fetching tfwm bus stops')
+                const lineId = urlProvider.linesWithRoutes();
+                console.log(lineId)
+                const busStops = urlProvider.lineBusStops(lineId);
+            break
             default: 
                 console.log('unknown command, please try again. ');
         }
